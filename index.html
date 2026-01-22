@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Cards Editor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      min-height: 100vh;
+    }
+    
+    .header {
+      background: #000;
+      border-bottom: 4px solid #333;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 900;
+    }
+    
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      background: #FEF08A;
+      color: #000;
+      border: 3px solid #000;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 #000;
+      transition: all 0.1s;
+    }
+    
+    .btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #000;
+    }
+    
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #000;
+    }
+    
+    .btn.secondary {
+      background: #C4B5FD;
+    }
+    
+    .btn.tertiary {
+      background: #67E8F9;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      height: calc(100vh - 70px);
+    }
+    
+    @media (max-width: 1200px) {
+      .container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+    
+    .editor-panel {
+      background: #0d0d0d;
+      border-right: 4px solid #333;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    .preview-panel {
+      background: #262626;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    .section {
+      margin-bottom: 24px;
+    }
+    
+    .section-title {
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title::before {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      background: #FEF08A;
+      border: 2px solid #000;
+      border-radius: 2px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #ccc;
+    }
+    
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      background: #1a1a1a;
+      border: 3px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #FEF08A;
+    }
+    
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .list-editor {
+      background: #1a1a1a;
+      border: 3px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .list-item {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .list-item input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    .list-item button {
+      background: #FCA5A5;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 6px;
+      width: 36px;
+      height: 44px;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .add-btn {
+      background: #86EFAC;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    .preview-label {
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    #preview {
+      transform-origin: top center;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #1a1a1a;
+      border: 4px solid #000;
+      border-radius: 16px;
+      box-shadow: 12px 12px 0 #000;
+      max-width: 800px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-header {
+      background: #000;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 900;
+    }
+    
+    .modal-close {
+      background: #FCA5A5;
+      color: #000;
+      border: 3px solid #000;
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .code-block {
+      background: #0d0d0d;
+      border: 3px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      color: #e0e0e0;
+    }
+    
+    .copy-btn {
+      margin-top: 12px;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #86EFAC;
+      color: #000;
+      border: 3px solid #000;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: 700;
+      box-shadow: 4px 4px 0 #000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 2000;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>📋 Feedback Cards Editor</h1>
+    <div class="header-buttons">
+      <button class="btn" onclick="showPythonCode()">Copiar Python</button>
+      <button class="btn secondary" onclick="showHTMLCode()">Copiar HTML</button>
+      <button class="btn tertiary" onclick="resetForm()">Limpiar</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="editor-panel">
+      
+      <div class="section">
+        <div class="section-title">Encabezado</div>
+        <label>Título</label>
+        <input type="text" id="titulo" value="Proyecto Final — Informe de Solución" oninput="updatePreview()">
+        
+        <label>Estado</label>
+        <select id="estado" onchange="updatePreview()">
+          <option value="APROBADO">APROBADO</option>
+          <option value="EXCELENTE">EXCELENTE</option>
+          <option value="REVISIÓN">REVISIÓN</option>
+          <option value="PENDIENTE">PENDIENTE</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Resumen</div>
+        <textarea id="resumen" oninput="updatePreview()">Informe claro y completo. Se entiende qué hiciste y por qué.</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Lo que está bien</div>
+        <div class="list-editor" id="bien-list">
+          <div class="list-item">
+            <input type="text" value="Estructura clara y fácil de seguir." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+          <div class="list-item">
+            <input type="text" value="Buena síntesis de la información." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addItem('bien-list')">+ Agregar punto</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Mejoras recomendadas</div>
+        <div class="list-editor" id="mejoras-list">
+          <div class="list-item">
+            <input type="text" value="Incluye el valor numérico de ROC-AUC." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+          <div class="list-item">
+            <input type="text" value="Agrega tabla comparativa de modelos." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addItem('mejoras-list')">+ Agregar mejora</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Lecturas recomendadas</div>
+        <div class="list-editor" id="lecturas-list">
+          <div class="list-item">
+            <input type="text" value="Storytelling with Data (Cole Nussbaumer Knaflic)." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addItem('lecturas-list')">+ Agregar lectura</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Consejo / Hábito</div>
+        <textarea id="consejo" oninput="updatePreview()">Practica escribir resúmenes ejecutivos de una página.</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Felicitación</div>
+        <label>Título de felicitación</label>
+        <input type="text" id="felicitacion-titulo" value="Felicidades por terminar el bootcamp" oninput="updatePreview()">
+        
+        <label>Texto de felicitación</label>
+        <textarea id="felicitacion-texto" oninput="updatePreview()">Completar el bootcamp significa que ya puedes llevar un proyecto de ciencia de datos de principio a fin.</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Siguiente paso</div>
+        <div class="list-editor" id="pasos-list">
+          <div class="list-item">
+            <input type="text" value="Agrega métricas numéricas del modelo final." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+          <div class="list-item">
+            <input type="text" value="Incluye estimación de impacto en negocio." oninput="updatePreview()">
+            <button onclick="removeItem(this)">×</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addItem('pasos-list')">+ Agregar paso</button>
+      </div>
+
+    </div>
+
+    <div class="preview-panel">
+      <div class="preview-label">Vista previa</div>
+      <div id="preview"></div>
+    </div>
+  </div>
+
+  <!-- Modal for code -->
+  <div class="modal" id="code-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Código</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="code-block" id="code-output"></div>
+        <button class="btn copy-btn" onclick="copyCode()">📋 Copiar al portapapeles</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copiado al portapapeles</div>
+
+  <script>
+    function getListItems(listId) {
+      const list = document.getElementById(listId);
+      const inputs = list.querySelectorAll('input');
+      return Array.from(inputs).map(i => i.value).filter(v => v.trim() !== '');
+    }
+
+    function addItem(listId) {
+      const list = document.getElementById(listId);
+      const div = document.createElement('div');
+      div.className = 'list-item';
+      div.innerHTML = `
+        <input type="text" value="" oninput="updatePreview()">
+        <button onclick="removeItem(this)">×</button>
+      `;
+      list.appendChild(div);
+      div.querySelector('input').focus();
+    }
+
+    function removeItem(btn) {
+      btn.parentElement.remove();
+      updatePreview();
+    }
+
+    function getData() {
+      return {
+        titulo: document.getElementById('titulo').value,
+        estado: document.getElementById('estado').value,
+        resumen: document.getElementById('resumen').value.trim(),
+        lo_que_esta_bien: getListItems('bien-list'),
+        mejoras: getListItems('mejoras-list'),
+        lecturas: getListItems('lecturas-list'),
+        consejo: document.getElementById('consejo').value.trim(),
+        felicitacion_titulo: document.getElementById('felicitacion-titulo').value.trim(),
+        felicitacion_texto: document.getElementById('felicitacion-texto').value.trim(),
+        siguiente_paso: getListItems('pasos-list'),
+      };
+    }
+
+    function generateHTML(data) {
+      const colores = {
+        "APROBADO": ["#A7F3D0", "✓"],
+        "EXCELENTE": ["#86EFAC", "★"],
+        "REVISIÓN": ["#FCA5A5", "⟳"],
+        "PENDIENTE": ["#FCD34D", "◷"],
+      };
+      const [colorEstado, icono] = colores[data.estado] || ["#E5E7EB", "•"];
+
+      const listaHTML = (items) => items.map(i => `<li>${i}</li>`).join('');
+
+      let bloqueBien = '';
+      if (data.lo_que_esta_bien.length > 0) {
+        bloqueBien = `
+        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="background:#86EFAC;width:12px;height:12px;border:3px solid #000;border-radius:4px;"></div>
+            <div style="font-weight:900;font-size:18px;">Lo que está bien</div>
+          </div>
+          <ul style="margin:0;padding-left:24px;font-weight:500;line-height:1.7;font-size:15px;">${listaHTML(data.lo_que_esta_bien)}</ul>
+        </div>`;
+      }
+
+      let bloqueMejoras = '';
+      if (data.mejoras.length > 0) {
+        bloqueMejoras = `
+        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="background:#FCD34D;width:12px;height:12px;border:3px solid #000;border-radius:4px;transform:rotate(45deg);"></div>
+            <div style="font-weight:900;font-size:18px;">Mejoras recomendadas</div>
+          </div>
+          <ul style="margin:0;padding-left:24px;font-weight:500;line-height:1.7;font-size:14px;">${listaHTML(data.mejoras)}</ul>
+        </div>`;
+      }
+
+      let bloqueLecturas = '';
+      if (data.lecturas.length > 0) {
+        let consejoHTML = '';
+        if (data.consejo) {
+          consejoHTML = `
+          <div style="margin-top:16px;padding-top:14px;border-top:3px dashed #000;">
+            <div style="font-weight:700;font-size:13px;line-height:1.5;background:#E0E7FF;padding:10px 14px;border-radius:8px;border:2px solid #000;">💡 ${data.consejo}</div>
+          </div>`;
+        }
+        bloqueLecturas = `
+        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="background:#C4B5FD;width:12px;height:12px;border:3px solid #000;border-radius:50%;"></div>
+            <div style="font-weight:900;font-size:18px;">Lecturas recomendadas</div>
+          </div>
+          <ul style="margin:0;padding-left:24px;font-weight:500;line-height:1.7;font-size:14px;">${listaHTML(data.lecturas)}</ul>
+          ${consejoHTML}
+        </div>`;
+      }
+
+      let bloqueColumnas = '';
+      if (data.mejoras.length > 0 && data.lecturas.length > 0) {
+        bloqueColumnas = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          ${bloqueMejoras}
+          ${bloqueLecturas}
+        </div>`;
+      } else if (data.mejoras.length > 0) {
+        bloqueColumnas = `<div style="margin-bottom:20px;">${bloqueMejoras}</div>`;
+      } else if (data.lecturas.length > 0) {
+        bloqueColumnas = `<div style="margin-bottom:20px;">${bloqueLecturas}</div>`;
+      }
+
+      let bloqueFelicitacion = '';
+      if (data.felicitacion_titulo && data.felicitacion_texto) {
+        bloqueFelicitacion = `
+        <div style="background:#F9A8D4;border:4px solid #000;border-radius:20px;padding:24px 28px;box-shadow:8px 8px 0 #000;margin-bottom:20px;position:relative;">
+          <div style="position:absolute;top:-14px;right:24px;background:#FFF;border:3px solid #000;border-radius:999px;padding:6px 14px;font-weight:900;font-size:12px;box-shadow:4px 4px 0 #000;transform:rotate(3deg);">🎉 GRAN LOGRO</div>
+          <div style="font-weight:900;font-size:22px;margin-bottom:12px;">${data.felicitacion_titulo}</div>
+          <div style="font-weight:500;font-size:15px;line-height:1.65;">${data.felicitacion_texto}</div>
+        </div>`;
+      }
+
+      let bloqueSiguiente = '';
+      if (data.siguiente_paso.length > 0) {
+        bloqueSiguiente = `
+        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="background:#67E8F9;width:20px;height:20px;border:3px solid #000;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">→</div>
+            <div style="font-weight:900;font-size:18px;">Siguiente paso</div>
+          </div>
+          <ul style="margin:0;padding-left:24px;font-weight:500;line-height:1.7;font-size:15px;">${listaHTML(data.siguiente_paso)}</ul>
+        </div>`;
+      }
+
+      return `<div style="background:#FFFBEB;border:4px solid #000;border-radius:24px;box-shadow:12px 12px 0 #000;padding:28px 32px;font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;color:#000;max-width:1000px;margin:20px auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px;">
+    <div style="font-weight:900;font-size:28px;line-height:1.1;letter-spacing:-0.5px;">${data.titulo}</div>
+    <div style="font-weight:900;font-size:16px;background:${colorEstado};border:4px solid #000;border-radius:999px;padding:10px 20px;box-shadow:6px 6px 0 #000;transform:rotate(-2deg);">${data.estado} ${icono}</div>
+  </div>
+  <div style="background:#FEF08A;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:8px 8px 0 #000;margin-bottom:24px;">
+    <div style="font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;color:#666;">Resumen</div>
+    <div style="font-weight:600;font-size:17px;line-height:1.5;">${data.resumen}</div>
+  </div>
+  ${bloqueBien}
+  ${bloqueColumnas}
+  ${bloqueFelicitacion}
+  ${bloqueSiguiente}
+</div>`;
+    }
+
+    function generatePythonCode(data) {
+      const formatList = (arr) => {
+        if (arr.length === 0) return '[]';
+        return '[\n        "' + arr.join('",\n        "') + '",\n    ]';
+      };
+
+      return `from IPython.display import HTML, display
+
+feedback = {
+    "titulo": "${data.titulo}",
+    "estado": "${data.estado}",
+    "resumen": """
+        ${data.resumen}
+    """,
+    "lo_que_esta_bien": ${formatList(data.lo_que_esta_bien)},
+    "mejoras": ${formatList(data.mejoras)},
+    "lecturas": ${formatList(data.lecturas)},
+    "consejo": "${data.consejo}",
+    "felicitacion_titulo": "${data.felicitacion_titulo}",
+    "felicitacion_texto": """
+        ${data.felicitacion_texto}
+    """,
+    "siguiente_paso": ${formatList(data.siguiente_paso)},
+}
+
+# Si tienes feedback_cards.py:
+# from feedback_cards import mostrar
+# mostrar(feedback)
+
+# O usa este HTML directamente:
+html = """
+${generateHTML(data).replace(/"/g, '\\"').replace(/\n/g, '\\n')}
+"""
+display(HTML(html))`;
+    }
+
+    function updatePreview() {
+      const data = getData();
+      document.getElementById('preview').innerHTML = generateHTML(data);
+    }
+
+    function showPythonCode() {
+      const data = getData();
+      document.getElementById('modal-title').textContent = 'Código Python';
+      document.getElementById('code-output').textContent = generatePythonCode(data);
+      document.getElementById('code-modal').classList.add('active');
+    }
+
+    function showHTMLCode() {
+      const data = getData();
+      document.getElementById('modal-title').textContent = 'Código HTML';
+      document.getElementById('code-output').textContent = generateHTML(data);
+      document.getElementById('code-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('code-modal').classList.remove('active');
+    }
+
+    function copyCode() {
+      const code = document.getElementById('code-output').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast();
+      });
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function resetForm() {
+      if (confirm('¿Limpiar todos los campos?')) {
+        document.getElementById('titulo').value = '';
+        document.getElementById('estado').value = 'APROBADO';
+        document.getElementById('resumen').value = '';
+        document.getElementById('consejo').value = '';
+        document.getElementById('felicitacion-titulo').value = '';
+        document.getElementById('felicitacion-texto').value = '';
+        
+        ['bien-list', 'mejoras-list', 'lecturas-list', 'pasos-list'].forEach(id => {
+          const list = document.getElementById(id);
+          list.innerHTML = `
+            <div class="list-item">
+              <input type="text" value="" oninput="updatePreview()">
+              <button onclick="removeItem(this)">×</button>
+            </div>
+          `;
+        });
+        
+        updatePreview();
+      }
+    }
+
+    // Close modal on outside click
+    document.getElementById('code-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // Close modal on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Initial render
+    updatePreview();
+  </script>
+
+</body>
+</html>
