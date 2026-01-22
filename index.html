@@ -499,8 +499,8 @@ Agradecemos mucho tu tiempo y tu consideración al distinguir entre la revisión
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
+        <button class="btn copy-btn" onclick="copyCode()" style="margin-bottom: 12px;">📋 Copiar al portapapeles</button>
         <div class="code-block" id="code-output"></div>
-        <button class="btn copy-btn" onclick="copyCode()">📋 Copiar al portapapeles</button>
       </div>
     </div>
   </div>
@@ -673,43 +673,11 @@ Agradecemos mucho tu tiempo y tu consideración al distinguir entre la revisión
     }
 
     function generatePythonCode(data) {
-      const formatList = (arr) => {
-        if (arr.length === 0) return '[]';
-        return '[\n        "' + arr.join('",\n        "') + '",\n    ]';
-      };
-
       return `from IPython.display import HTML, display
 
-feedback = {
-    "titulo": "${data.titulo}",
-    "estado": "${data.estado}",
-    "resumen": """
-        ${data.resumen}
-    """,
-    "lo_que_esta_bien": ${formatList(data.lo_que_esta_bien)},
-    "mejoras": ${formatList(data.mejoras)},
-    "lecturas": ${formatList(data.lecturas)},
-    "consejo": "${data.consejo}",
-    "felicitacion_titulo": "${data.felicitacion_titulo}",
-    "felicitacion_texto": """
-        ${data.felicitacion_texto}
-    """,
-    "siguiente_paso": ${formatList(data.siguiente_paso)},
-    "mostrar_disclaimer": ${data.mostrar_disclaimer ? 'True' : 'False'},
-    "disclaimer_texto": """
-        ${data.disclaimer_texto}
-    """,
-}
-
-# Si tienes feedback_cards.py:
-# from feedback_cards import mostrar
-# mostrar(feedback)
-
-# O usa este HTML directamente:
-html = """
-${generateHTML(data).replace(/"/g, '\\"').replace(/\n/g, '\\n')}
-"""
-display(HTML(html))`;
+display(HTML("""
+${generateHTML(data)}
+"""))`;
     }
 
     function updatePreview() {
