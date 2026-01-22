@@ -336,9 +336,8 @@
         <label>Estado</label>
         <select id="estado" onchange="updatePreview()">
           <option value="APROBADO">APROBADO</option>
-          <option value="EXCELENTE">EXCELENTE</option>
+          <option value="RECHAZADO">RECHAZADO</option>
           <option value="REVISIÓN">REVISIÓN</option>
-          <option value="PENDIENTE">PENDIENTE</option>
         </select>
       </div>
 
@@ -403,16 +402,8 @@
       </div>
 
       <div class="section">
-        <div class="section-title">Siguiente paso</div>
+        <div class="section-title">Siguiente paso (opcional)</div>
         <div class="list-editor" id="pasos-list">
-          <div class="list-item">
-            <input type="text" value="Agrega métricas numéricas del modelo final." oninput="updatePreview()">
-            <button onclick="removeItem(this)">×</button>
-          </div>
-          <div class="list-item">
-            <input type="text" value="Incluye estimación de impacto en negocio." oninput="updatePreview()">
-            <button onclick="removeItem(this)">×</button>
-          </div>
         </div>
         <button class="add-btn" onclick="addItem('pasos-list')">+ Agregar paso</button>
       </div>
@@ -483,9 +474,8 @@
     function generateHTML(data) {
       const colores = {
         "APROBADO": ["#A7F3D0", "✓"],
-        "EXCELENTE": ["#86EFAC", "★"],
-        "REVISIÓN": ["#FCA5A5", "⟳"],
-        "PENDIENTE": ["#FCD34D", "◷"],
+        "RECHAZADO": ["#FCA5A5", "✗"],
+        "REVISIÓN": ["#FCD34D", "⟳"],
       };
       const [colorEstado, icono] = colores[data.estado] || ["#E5E7EB", "•"];
 
