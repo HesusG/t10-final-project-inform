@@ -161,6 +161,62 @@
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 16px;
+      min-height: 20px;
+    }
+
+    .list-editor:empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 13px;
+    }
+
+    .list-editor:empty::before {
+      content: 'Haz clic en el botón para agregar';
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      background: #333;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle.active {
+      background: #86EFAC;
+    }
+
+    .toggle.active::after {
+      transform: translateX(22px);
+    }
+
+    .toggle-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #ccc;
     }
     
     .list-item {
@@ -408,6 +464,25 @@
         <button class="add-btn" onclick="addItem('pasos-list')">+ Agregar paso</button>
       </div>
 
+      <div class="section">
+        <div class="section-title">Disclaimer</div>
+        <div class="toggle-container">
+          <div class="toggle" id="disclaimer-toggle" onclick="toggleDisclaimer()"></div>
+          <span class="toggle-label">Mostrar disclaimer</span>
+        </div>
+        <div id="disclaimer-editor" style="display: none;">
+          <textarea id="disclaimer-texto" oninput="updatePreview()" style="min-height: 150px;">Al finalizar esta revisión, se habilitará un espacio para que puedas compartir tu retroalimentación.
+
+Este formulario está pensado únicamente para evaluar la revisión técnica (claridad, utilidad y trato del revisor).
+
+Las calificaciones que se registran allí se utilizan para dar seguimiento al desempeño del revisor y tienen un impacto directo en sus métricas.
+
+Si tienes dudas sobre la plataforma, el contenido del curso o algún aspecto organizativo, te agradecemos que lo comentes directamente con tu Community Manager, quien es el canal indicado para ayudarte.
+
+Agradecemos mucho tu tiempo y tu consideración al distinguir entre la revisión técnica y otros factores del curso. Tu apoyo y comprensión contribuyen a un proceso más justo y a que todos podamos seguir mejorando.</textarea>
+        </div>
+      </div>
+
     </div>
 
     <div class="preview-panel">
@@ -456,7 +531,16 @@
       updatePreview();
     }
 
+    function toggleDisclaimer() {
+      const toggle = document.getElementById('disclaimer-toggle');
+      const editor = document.getElementById('disclaimer-editor');
+      toggle.classList.toggle('active');
+      editor.style.display = toggle.classList.contains('active') ? 'block' : 'none';
+      updatePreview();
+    }
+
     function getData() {
+      const disclaimerActive = document.getElementById('disclaimer-toggle').classList.contains('active');
       return {
         titulo: document.getElementById('titulo').value,
         estado: document.getElementById('estado').value,
@@ -468,6 +552,8 @@
         felicitacion_titulo: document.getElementById('felicitacion-titulo').value.trim(),
         felicitacion_texto: document.getElementById('felicitacion-texto').value.trim(),
         siguiente_paso: getListItems('pasos-list'),
+        mostrar_disclaimer: disclaimerActive,
+        disclaimer_texto: document.getElementById('disclaimer-texto').value.trim(),
       };
     }
 
@@ -551,12 +637,21 @@
       let bloqueSiguiente = '';
       if (data.siguiente_paso.length > 0) {
         bloqueSiguiente = `
-        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;">
+        <div style="background:#FFF;border:4px solid #000;border-radius:16px;padding:20px 24px;box-shadow:6px 6px 0 #000;margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
             <div style="background:#67E8F9;width:20px;height:20px;border:3px solid #000;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">→</div>
             <div style="font-weight:900;font-size:18px;">Siguiente paso</div>
           </div>
           <ul style="margin:0;padding-left:24px;font-weight:500;line-height:1.7;font-size:15px;">${listaHTML(data.siguiente_paso)}</ul>
+        </div>`;
+      }
+
+      let bloqueDisclaimer = '';
+      if (data.mostrar_disclaimer && data.disclaimer_texto) {
+        const parrafos = data.disclaimer_texto.split('\n\n').filter(p => p.trim()).map(p => `<p style="margin:0 0 10px 0;">${p.trim()}</p>`).join('');
+        bloqueDisclaimer = `
+        <div style="border:3px dashed #999;border-radius:12px;padding:16px 20px;color:#666;font-size:13px;line-height:1.6;background:#f5f5f5;">
+          ${parrafos}
         </div>`;
       }
 
@@ -573,6 +668,7 @@
   ${bloqueColumnas}
   ${bloqueFelicitacion}
   ${bloqueSiguiente}
+  ${bloqueDisclaimer}
 </div>`;
     }
 
@@ -599,6 +695,10 @@ feedback = {
         ${data.felicitacion_texto}
     """,
     "siguiente_paso": ${formatList(data.siguiente_paso)},
+    "mostrar_disclaimer": ${data.mostrar_disclaimer},
+    "disclaimer_texto": """
+        ${data.disclaimer_texto}
+    """,
 }
 
 # Si tienes feedback_cards.py:
@@ -656,7 +756,11 @@ display(HTML(html))`;
         document.getElementById('consejo').value = '';
         document.getElementById('felicitacion-titulo').value = '';
         document.getElementById('felicitacion-texto').value = '';
-        
+
+        // Reset disclaimer
+        document.getElementById('disclaimer-toggle').classList.remove('active');
+        document.getElementById('disclaimer-editor').style.display = 'none';
+
         ['bien-list', 'mejoras-list', 'lecturas-list', 'pasos-list'].forEach(id => {
           const list = document.getElementById(id);
           list.innerHTML = `
@@ -666,7 +770,7 @@ display(HTML(html))`;
             </div>
           `;
         });
-        
+
         updatePreview();
       }
     }
