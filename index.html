@@ -695,7 +695,7 @@ feedback = {
         ${data.felicitacion_texto}
     """,
     "siguiente_paso": ${formatList(data.siguiente_paso)},
-    "mostrar_disclaimer": ${data.mostrar_disclaimer},
+    "mostrar_disclaimer": ${data.mostrar_disclaimer ? 'True' : 'False'},
     "disclaimer_texto": """
         ${data.disclaimer_texto}
     """,
